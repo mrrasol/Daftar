@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f5e57">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>دفتر | مدیریت کلاس</title>
+<style>
+:root{
+  --ink:#14302e;--muted:#5f7472;--bg:#f2f6f5;--panel:#fff;--line:#e1eae8;
+  --primary:#0f5e57;--primary-soft:#dcefec;--accent:#e9a23b;--danger:#c2410c;
+  --radius:14px
+}
+@media(prefers-color-scheme:dark){
+  :root{--ink:#e6f1ef;--muted:#93aaa7;--bg:#0e1a19;--panel:#162725;--line:#24403c;--primary:#2fa398;--primary-soft:#1d3a37;--accent:#f0b24f;--danger:#f08a5d}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;height:100%}
+body{font-family:Vazirmatn,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7}
+header{position:sticky;top:0;z-index:5;background:var(--primary);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 12px;display:flex;align-items:center;gap:10px}
+header h1{font-size:19px;margin:0;font-weight:700;flex:1}
+header small{display:block;font-size:12.5px;font-weight:400;opacity:.8;line-height:1.4}
+.back{background:rgba(255,255,255,.16);border:0;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer}
+main{max-width:680px;margin:0 auto;padding:14px 14px 150px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row:active{background:var(--primary-soft)}
+.badge{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:17px;color:#fff;flex:none}
+.info{flex:1;min-width:0}
+.info b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info span{font-size:13px;color:var(--muted)}
+.icon{background:none;border:0;color:var(--muted);font-size:18px;width:36px;height:36px;border-radius:10px;cursor:pointer;flex:none}
+.icon:active{background:var(--line)}
+.icon.del{color:var(--danger)}
+.empty{text-align:center;color:var(--muted);padding:40px 18px}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+.bar{display:flex;gap:8px;margin:0 0 12px}
+.chip{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--primary);font:inherit;font-weight:600;padding:9px 8px;border-radius:12px;cursor:pointer}
+.fab{position:fixed;inset-inline-start:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);background:var(--accent);color:#2a1c00;border:0;border-radius:18px;min-height:54px;padding:0 18px;font:inherit;font-weight:700;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer;z-index:7}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,25,23,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--panel);width:100%;max-width:680px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 16px);animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet h2{margin:0 0 12px;font-size:18px}
+label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+textarea{min-height:140px;resize:vertical}
+.actions{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;font:inherit;font-weight:700;border-radius:12px;padding:11px;border:0;cursor:pointer}
+.btn.ok{background:var(--primary);color:#fff}
+.btn.no{background:var(--line);color:var(--ink)}
+nav{position:fixed;bottom:0;inset-inline:0;background:var(--panel);border-top:1px solid var(--line);display:flex;gap:4px;padding:6px 8px calc(env(safe-area-inset-bottom,0px) + 6px);z-index:6}
+.nv{flex:1;background:none;border:0;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:9px 3px;border-radius:12px;cursor:pointer}
+.nv.on{color:var(--primary);background:var(--primary-soft)}
+.grid{display:grid;gap:5px}
+.dh,.ph{text-align:center;font-size:11px;font-weight:700;color:var(--muted);align-self:center}
+.dh{padding:6px 0;border-radius:10px}.dh.today{background:var(--accent);color:#2a1c00}
+.cell{min-height:68px;border:0;border-radius:11px;color:#fff;font:inherit;padding:5px 3px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;overflow:hidden;min-width:0}
+.cell b{font-size:11px;line-height:1.3}.cell span{font-size:10px;opacity:.85;line-height:1.2}
+.cell.empty{background:var(--panel);color:var(--muted);border:1.5px dashed var(--line);font-size:20px}
+.paper{white-space:pre-wrap;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;line-height:2;margin-bottom:12px}
+@media print{header,nav,.fab,.noprint,#modal{display:none!important}body{background:#fff;color:#000}.paper{border:0;padding:0}main{padding:0}}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px}
+.tab{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:inherit;font-weight:600;font-size:13px;padding:7px 13px;border-radius:20px;cursor:pointer}
+.tab.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.seg{display:flex;gap:4px;flex:none}
+.sg{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:6px 8px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.sg.on{color:#fff;border-color:transparent}.sg.on.s-a{background:#c2410c}.sg.on.s-l{background:#b7791f}.sg.on.s-e{background:#1d6fb8}
+.pm{width:40px;height:40px;border-radius:11px;border:0;font:inherit;font-size:22px;font-weight:700;cursor:pointer;color:#fff;flex:none}
+.pm.plus{background:#2f855a}.pm.minus{background:#c2410c}
+.sc{width:88px;text-align:center;font-weight:700}
+input[type=date]{max-width:220px}
+.warn{background:#fff4df;border:1px solid #e9a23b;color:#634008;padding:12px;border-radius:12px;margin:0 0 12px}
+@media(prefers-color-scheme:dark){.warn{background:#3b301c;border-color:#8a6b31;color:#ffe1a3}}
+.session{margin-bottom:10px}
+.session .chip{font-size:13px}
+@media(max-width:370px){.row{gap:6px;padding:9px 8px}.sg{padding:6px 6px;font-size:11px}.badge{width:36px;height:36px}}
+</style>
+</head>
+<body>
+<header>
+  <button class="back" id="back" aria-label="بازگشت" hidden>→</button>
+  <h1 id="title">دفتر</h1>
+</header>
+<main id="app"></main>
+<nav id="nav"></nav>
+<button class="fab" id="fab"></button>
+<div id="modal"></div>
+
+<script>
+'use strict';
+
+const KEY = 'classapp-v1';
+const APP_NAME = 'Daftar';
+const FORMAT_VERSION = 2;
+const MAX_BACKUP_BYTES = 20 * 1024 * 1024;
+const COLORS = ['#0f5e57','#7c4dbd','#c2570c','#1d6fb8','#b0316b','#5b7a1f'];
+const DAYS = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+const NAV = [['plan','میز کار'],['schools','مدارس'],['report','گزارش'],['set','تنظیمات']];
+const TG = [['list','دانش‌آموزان'],['courses','درس‌ها']];
+const TC = [['att','حضور و غیاب'],['pts','مثبت و منفی'],['exam','آزمون‌ها']];
+const ST = {a:'غایب',l:'تأخیر',e:'موجه'};
+const ARRAY_KEYS = ['schools','classes','students','attendance','points','exams','courses'];
+
+let loadWarning = '';
+let db = load();
+let v = {nav:'plan'};
+
+function empty(){
+  return {
+    schools:[],classes:[],students:[],attendance:[],points:[],exams:[],courses:[],
+    schedule:{},settings:{hidden:[5,6],teacher:'',school:'',transpose:false},v2:1
+  };
+}
+function isObject(x){return !!x && typeof x === 'object' && !Array.isArray(x);}
+function clone(x){return JSON.parse(JSON.stringify(x));}
+function idSet(items){return new Set(items.map(x=>String(x.id)));}
+function hasUniqueIds(items){
+  const seen=new Set();
+  return items.every(x=>{
+    if(!isObject(x)||x.id==null||String(x.id).trim()==='')return false;
+    const id=String(x.id);
+    if(seen.has(id))return false;
+    seen.add(id);return true;
+  });
+}
+function load(){
+  let raw;
+  try{raw=localStorage.getItem(KEY);}catch(e){loadWarning='مرورگر اجازه دسترسی به حافظه محلی را نمی‌دهد.';return empty();}
+  if(raw==null)return empty();
+  try{
+    const parsed=JSON.parse(raw);
+    if(!isObject(parsed))throw new Error('ساختار اصلی داده معتبر نیست.');
+    const d=empty();
+    for(const k of ARRAY_KEYS){
+      if(parsed[k]!==undefined&&!Array.isArray(parsed[k]))throw new Error('ساختار بخش «'+k+'» معتبر نیست.');
+      if(Array.isArray(parsed[k]))d[k]=parsed[k];
+    }
+    if(parsed.schedule!==undefined&&!isObject(parsed.schedule))throw new Error('ساختار برنامه هفتگی معتبر نیست.');
+    if(isObject(parsed.schedule))d.schedule=parsed.schedule;
+    if(parsed.settings!==undefined&&!isObject(parsed.settings))throw new Error('ساختار تنظیمات معتبر نیست.');
+    if(isObject(parsed.settings))d.settings=Object.assign(d.settings,parsed.settings);
+    if(!Array.isArray(d.settings.hidden))d.settings.hidden=[5,6];
+    d.settings.hidden=d.settings.hidden.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6);
+    d.settings.teacher=String(d.settings.teacher||'');
+    d.settings.school=String(d.settings.school||'');
+    d.settings.transpose=!!d.settings.transpose;
+    d.v2=parsed.v2||0;
+    const result=validateData(d,{allowLegacy:!d.v2});
+    if(!result.ok)throw new Error(result.message);
+    return d;
+  }catch(e){
+    loadWarning='اطلاعات ذخیره‌شده قابل خواندن یا ناسازگار است. برای جلوگیری از بازنویسی داده‌ها، برنامه در حالت محافظت‌شده باز شده است. جزئیات: '+(e.message||'خطای نامشخص');
+    return empty();
+  }
+}
+function save(){
+  if(loadWarning){alert('ذخیره‌سازی متوقف است؛ ابتدا مشکل داده‌های قبلی را بررسی و از آن‌ها نسخه خام تهیه کنید.');return false;}
+  try{
+    localStorage.setItem(KEY,JSON.stringify(db));
+    return true;
+  }catch(e){
+    alert('ذخیره‌سازی روی این دستگاه ممکن نیست. فضای خالی و دسترسی حافظه مرورگر را بررسی کنید.');
+    return false;
+  }
+}
+function commitMutation(fn){
+  const before=clone(db);
+  try{fn();if(save())return true;db=before;return false;}
+  catch(e){db=before;alert('عملیات انجام نشد: '+(e.message||'خطای نامشخص'));return false;}
+}
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const fa=n=>Number(n||0).toLocaleString('fa-IR');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const color=i=>COLORS[Math.abs(i)%COLORS.length];
+const $=id=>document.getElementById(id);
+const today=()=>{
+  const n=new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+};
+const fdate=d=>new Date(d+'T12:00:00').toLocaleDateString('fa-IR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const fixNum=s=>String(s??'').trim().replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٫,،]/g,'.');
+const emptyBox=(a,b)=>'<div class="empty"><b>'+esc(a)+'</b>'+esc(b)+'</div>';
+const needName=o=>{if(!String(o.name||'').trim()){alert('نام را وارد کن.');return false;}return true;};
+
+function validateData(d,opts={}){
+  const legacy=!!opts.allowLegacy;
+  for(const k of ARRAY_KEYS)if(!Array.isArray(d[k]))return {ok:false,message:'بخش '+k+' باید آرایه باشد.'};
+  if(!isObject(d.schedule)||!isObject(d.settings))return {ok:false,message:'برنامه هفتگی یا تنظیمات معتبر نیست.'};
+  if(!hasUniqueIds(d.schools)||!hasUniqueIds(d.classes)||!hasUniqueIds(d.students)||!hasUniqueIds(d.courses)||!hasUniqueIds(d.attendance)||!hasUniqueIds(d.points)||!hasUniqueIds(d.exams)){
+    return {ok:false,message:'شناسه تکراری یا شناسه خالی در اطلاعات وجود دارد.'};
+  }
+  const schools=idSet(d.schools),classes=idSet(d.classes),students=idSet(d.students),courses=idSet(d.courses);
+  for(const s of d.schools)if(typeof s.name!=='string'||!s.name.trim())return {ok:false,message:'نام یکی از مدرسه‌ها معتبر نیست.'};
+  for(const c of d.classes)if(!schools.has(String(c.schoolId))||typeof c.name!=='string'||!c.name.trim())return {ok:false,message:'ارتباط یکی از کلاس‌ها با مدرسه معتبر نیست.'};
+  const classOfStudent=new Map();
+  for(const s of d.students){
+    if(!classes.has(String(s.classId))||typeof s.name!=='string'||!s.name.trim())return {ok:false,message:'ارتباط یا نام یکی از دانش‌آموزان معتبر نیست.'};
+    classOfStudent.set(String(s.id),String(s.classId));
+  }
+  for(const c of d.courses)if(!classes.has(String(c.classId))||typeof c.name!=='string'||!c.name.trim())return {ok:false,message:'ارتباط یکی از درس‌ها با کلاس معتبر نیست.'};
+  const courseClass=new Map(d.courses.map(c=>[String(c.id),String(c.classId)]));
+  const legacyClassRef=legacy&&d.courses.length===0;
+  const getClassForRef=ref=>legacyClassRef?(classes.has(String(ref))?String(ref):null):(courseClass.get(String(ref))||null);
+  for(const a of d.attendance){
+    const cl=getClassForRef(a.classId);
+    if(!cl||typeof a.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(a.date)||!isObject(a.marks))return {ok:false,message:'یکی از جلسات حضور و غیاب ساختار نامعتبر دارد.'};
+    for(const [sid,status] of Object.entries(a.marks)){
+      if(classOfStudent.get(String(sid))!==cl||!['a','l','e'].includes(status))return {ok:false,message:'علامت حضور و غیاب به دانش‌آموز یا کلاس نامعتبر اشاره می‌کند.'};
+    }
+  }
+  for(const p of d.points){
+    const cl=getClassForRef(p.classId);
+    if(!cl||classOfStudent.get(String(p.studentId))!==cl||![1,-1].includes(Number(p.val)))return {ok:false,message:'یکی از سوابق مثبت و منفی با دانش‌آموز یا درس هماهنگ نیست.'};
+  }
+  for(const e of d.exams){
+    const cl=getClassForRef(e.classId),max=Number(e.max);
+    if(!cl||typeof e.title!=='string'||!e.title.trim()||!Number.isFinite(max)||max<=0||!isObject(e.scores))return {ok:false,message:'ساختار یکی از آزمون‌ها معتبر نیست.'};
+    for(const [sid,score] of Object.entries(e.scores)){
+      const n=Number(score);
+      if(classOfStudent.get(String(sid))!==cl||!Number.isFinite(n)||n<0||n>max)return {ok:false,message:'نمره‌ای خارج از محدوده یا متعلق به دانش‌آموز نامرتبط وجود دارد.'};
+    }
+  }
+  for(const ref of Object.values(d.schedule)){
+    if(typeof ref!=='string'&&typeof ref!=='number')return {ok:false,message:'شناسه یکی از زنگ‌های برنامه هفتگی معتبر نیست.'};
+    if(legacyClassRef?!classes.has(String(ref)):!courses.has(String(ref)))return {ok:false,message:'برنامه هفتگی به درس یا کلاس ناموجود اشاره می‌کند.'};
+  }
+  return {ok:true};
+}
+
+function migrate(persist=true){
+  if(loadWarning||db.v2)return false;
+  const map={};
+  db.classes.forEach(c=>{
+    let co=db.courses.find(x=>String(x.classId)===String(c.id));
+    if(!co){
+      co={id:uid(),classId:c.id,name:String(c.subject||c.name||'درس جدید')};
+      db.courses.push(co);
+    }
+    map[String(c.id)]=co.id;
+  });
+  ['attendance','exams','points'].forEach(key=>{
+    db[key].forEach(item=>{
+      if(map[String(item.classId)])item.classId=map[String(item.classId)];
+    });
+  });
+  Object.keys(db.schedule).forEach(key=>{
+    if(map[String(db.schedule[key])])db.schedule[key]=map[String(db.schedule[key])];
+  });
+  db.v2=1;
+  clean();
+  if(persist)save();
+  return true;
+}
+
+function clean(){
+  const schoolIds=idSet(db.schools);
+  db.classes=db.classes.filter(c=>schoolIds.has(String(c.schoolId)));
+  const classIds=idSet(db.classes);
+  db.students=db.students.filter(s=>classIds.has(String(s.classId)));
+  const studentIds=idSet(db.students);
+  db.courses=db.courses.filter(c=>classIds.has(String(c.classId)));
+  const courseMap=new Map(db.courses.map(c=>[String(c.id),String(c.classId)]));
+  db.points=db.points.filter(p=>studentIds.has(String(p.studentId))&&courseMap.has(String(p.classId))&&
+    db.students.some(s=>String(s.id)===String(p.studentId)&&String(s.classId)===courseMap.get(String(p.classId)))&&[1,-1].includes(Number(p.val)));
+  db.attendance=db.attendance.filter(a=>courseMap.has(String(a.classId))&&isObject(a.marks));
+  db.attendance.forEach(a=>{
+    const cl=courseMap.get(String(a.classId));
+    Object.keys(a.marks).forEach(sid=>{
+      const st=db.students.find(s=>String(s.id)===String(sid));
+      if(!st||String(st.classId)!==cl||!['a','l','e'].includes(a.marks[sid]))delete a.marks[sid];
+    });
+  });
+  db.exams=db.exams.filter(e=>courseMap.has(String(e.classId))&&isObject(e.scores)&&Number.isFinite(Number(e.max))&&Number(e.max)>0);
+  db.exams.forEach(e=>{
+    const cl=courseMap.get(String(e.classId));
+    Object.keys(e.scores).forEach(sid=>{
+      const st=db.students.find(s=>String(s.id)===String(sid)),n=Number(e.scores[sid]);
+      if(!st||String(st.classId)!==cl||!Number.isFinite(n)||n<0||n>Number(e.max))delete e.scores[sid];
+    });
+  });
+  Object.keys(db.schedule).forEach(k=>{if(!courseMap.has(String(db.schedule[k])))delete db.schedule[k];});
+  if(!Array.isArray(db.settings.hidden))db.settings.hidden=[5,6];
+}
+
+function render(){
+  if(loadWarning){
+    $('title').textContent='بازیابی اطلاعات';
+    $('back').hidden=true;$('fab').hidden=true;
+    $('nav').innerHTML='';
+    $('app').innerHTML='<div class="warn"><b>حفاظت از اطلاعات فعال است.</b><p>'+esc(loadWarning)+'</p><p>هیچ داده‌ای روی حافظه قبلی نوشته نمی‌شود. ابتدا نسخه خام اطلاعات ذخیره‌شده را دریافت کن یا یک فایل پشتیبان سالم را بازیابی کن.</p><button class="chip" data-act="rawbackup">دانلود داده خام ذخیره‌شده</button><div style="margin-top:12px"><input type="file" id="rf" accept=".json,.txt,application/json,text/plain"></div></div>';
+    return;
+  }
+  const app=$('app'),back=$('back'),fab=$('fab');
+  back.hidden=['plan','report','set'].includes(v.nav)||v.page==='schools';
+  fab.hidden=false;drawNav();
+  if(v.nav==='plan'){planView();return;}
+  if(v.nav==='report'){reportView();return;}
+  if(v.nav==='set'){settingsView();return;}
+  let html='';
+  if(v.page==='schools'){
+    $('title').textContent='مدرسه‌ها';fab.textContent='+ مدرسه جدید';
+    html=db.schools.length?'<div class="group">'+db.schools.map((s,i)=>{
+      const n=db.classes.filter(c=>c.schoolId===s.id).length;
+      return row('s',s.id,color(i),s.name[0],s.name,n?fa(n)+' کلاس':'هنوز کلاسی ندارد');
+    }).join('')+'</div>':emptyBox('مدرسه‌ای ثبت نشده','با دکمه «مدرسه جدید» اولین مدرسه‌ات را اضافه کن.');
+  }else if(v.page==='classes'){
+    const s=db.schools.find(x=>x.id===v.schoolId);
+    if(!s){v={page:'schools'};return render();}
+    $('title').innerHTML=esc(s.name)+'<small>پایه و رشته‌ها</small>';fab.textContent='+ پایه و رشته';
+    const list=db.classes.filter(c=>c.schoolId===s.id);
+    html=list.length?'<div class="group">'+list.map((c,i)=>{
+      const n=db.students.filter(t=>t.classId===c.id).length;
+      return row('c',c.id,color(i+1),c.name[0],c.name,[fa(db.courses.filter(o=>o.classId===c.id).length)+' درس',n?fa(n)+' دانش‌آموز':'بدون دانش‌آموز'].join(' • '));
+    }).join('')+'</div>':emptyBox('پایه و رشته‌ای ثبت نشده','مثلاً «یازدهم مکانیک» را اضافه کن.');
+  }else if(v.page==='students'&&v.courseId){classTab();return;}
+  else if(v.page==='students'&&v.tab==='courses'){coursesTab();return;}
+  else if(v.page==='students'){
+    const c=db.classes.find(x=>x.id===v.classId);
+    if(!c){v={page:'schools'};return render();}
+    const list=studentsOf(c.id);
+    $('title').innerHTML=esc(c.name)+'<small>دانش‌آموزان • '+fa(list.length)+' نفر</small>';
+    fab.textContent='+ دانش‌آموز جدید';
+    html=tabsHtml()+'<div class="bar"><button class="chip" data-act="bulk">افزودن گروهی (چند نام با هم)</button></div>'+
+      (list.length?'<div class="group">'+list.map((t,i)=>row('t',t.id,color(i+2),t.name[0],t.name,t.number?'شماره: '+t.number:'')).join('')+'</div>':
+      emptyBox('دانش‌آموزی ثبت نشده','یکی‌یکی اضافه کن یا لیست اسامی را یک‌جا وارد کن.'));
+  }
+  app.innerHTML=html;
+}
+function row(kind,id,col,letter,name,sub){
+  return `<div class="row" data-act="open" data-k="${kind}" data-id="${esc(id)}">
+    <div class="badge" style="background:${col}">${esc(letter)}</div>
+    <div class="info"><b>${esc(name)}</b><span>${esc(sub)}</span></div>
+    <button class="icon" data-act="edit" data-k="${kind}" data-id="${esc(id)}" aria-label="ویرایش">✎</button>
+    <button class="icon del" data-act="del" data-k="${kind}" data-id="${esc(id)}" aria-label="حذف">✕</button></div>`;
+}
+function drawNav(){
+  const cur=v.nav||'schools';
+  $('nav').innerHTML=NAV.map(([k,n])=>`<button class="nv${cur===k?' on':''}" data-nav="${k}">${n}</button>`).join('');
+}
+function tabsHtml(){
+  const T=v.courseId?TC:TG,cur=v.tab||(v.courseId?'att':'list');
+  return '<div class="tabs">'+T.map(([k,n])=>`<button class="tab${cur===k?' on':''}" data-act="tab" data-t="${k}">${n}</button>`).join('')+'</div>';
+}
+const studentsOf=id=>db.students.filter(t=>t.classId===id).sort((a,b)=>a.name.localeCompare(b.name,'fa'));
+
+function sheet(title,fields,vals,onOk,hint){
+  $('modal').innerHTML=`<div class="sheet-bg"><div class="sheet" role="dialog" aria-modal="true"><h2>${title}</h2>`+
+    fields.map(f=>`<label for="f_${f.k}">${f.label}</label>`+(f.area?
+      `<textarea id="f_${f.k}" placeholder="${f.ph||''}">${esc(vals[f.k]||'')}</textarea>`:
+      `<input id="f_${f.k}" value="${esc(vals[f.k]||'')}" placeholder="${f.ph||''}">`)).join('')+
+    (hint?`<p class="hint">${hint}</p>`:'')+
+    '<div class="actions"><button class="btn no" id="no">انصراف</button><button class="btn ok" id="ok">ذخیره</button></div></div></div>';
+  const first=$('modal').querySelector('input,textarea');if(first)first.focus();
+  $('no').onclick=closeSheet;
+  $('modal').querySelector('.sheet-bg').onclick=e=>{if(e.target.classList.contains('sheet-bg'))closeSheet();};
+  $('ok').onclick=()=>{
+    const out={};fields.forEach(f=>out[f.k]=$('f_'+f.k).value.trim());
+    const before=clone(db);
+    if(onOk(out)!==false){
+      if(save()){closeSheet();render();}
+      else{db=before;render();}
+    }
+  };
+}
+function closeSheet(){$('modal').innerHTML='';$('modal').onclick=null;}
+function addOrEdit(kind,id){
+  if(kind==='x')return addExam(id);
+  if(kind==='o')return addCourse(id);
+  if(kind==='s'){
+    const o=db.schools.find(x=>x.id===id)||{};
+    sheet(id?'ویرایش مدرسه':'مدرسه جدید',[{k:'name',label:'نام مدرسه',ph:'مثلاً هنرستان شهید بهشتی'}],o,d=>{
+      if(!needName(d))return false;
+      if(id)o.name=d.name;else db.schools.push({id:uid(),name:d.name});
+    });
+  }else if(kind==='c'){
+    const o=db.classes.find(x=>x.id===id)||{};
+    sheet(id?'ویرایش پایه و رشته':'پایه و رشته جدید',[{k:'name',label:'نام پایه و رشته',ph:'مثلاً یازدهم مکانیک'}],o,d=>{
+      if(!needName(d))return false;
+      if(id)o.name=d.name;else db.classes.push({id:uid(),schoolId:v.schoolId,name:d.name});
+    });
+  }else if(kind==='t'){
+    const o=db.students.find(x=>x.id===id)||{};
+    sheet(id?'ویرایش دانش‌آموز':'دانش‌آموز جدید',[
+      {k:'name',label:'نام و نام خانوادگی'},
+      {k:'number',label:'شماره (اختیاری)',ph:'شماره دانش‌آموزی یا ردیف'}
+    ],o,d=>{
+      if(!needName(d))return false;
+      if(id){o.name=d.name;o.number=d.number;}
+      else db.students.push({id:uid(),classId:v.classId,name:d.name,number:d.number});
+    });
+  }
+}
+function bulk(){
+  sheet('افزودن گروهی دانش‌آموزان',[{k:'list',label:'هر نام در یک خط',area:true,ph:'علی رضایی\nمحمد احمدی'}],{},d=>{
+    const names=d.list.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    if(!names.length){alert('حداقل یک نام وارد کن.');return false;}
+    names.forEach(n=>db.students.push({id:uid(),classId:v.classId,name:n,number:''}));
+  },'لیست را از اکسل یا هر جای دیگر کپی و اینجا بچسبان.');
+}
+function remove(kind,id){
+  const messages={s:'این مدرسه با همه کلاس‌ها و دانش‌آموزانش حذف شود؟',c:'این کلاس با همه دانش‌آموزانش حذف شود؟',t:'این دانش‌آموز حذف شود؟',o:'این درس با حضور و غیاب، آزمون‌ها و نمره‌هایش حذف شود؟',x:'این آزمون حذف شود؟'};
+  if(!messages[kind]||!confirm(messages[kind]))return;
+  commitMutation(()=>{
+    if(kind==='s'){
+      const classIds=new Set(db.classes.filter(c=>String(c.schoolId)===String(id)).map(c=>String(c.id)));
+      db.students=db.students.filter(t=>!classIds.has(String(t.classId)));
+      db.classes=db.classes.filter(c=>String(c.schoolId)!==String(id));
+      db.schools=db.schools.filter(s=>String(s.id)!==String(id));
+    }else if(kind==='c'){
+      db.students=db.students.filter(t=>String(t.classId)!==String(id));
+      db.classes=db.classes.filter(c=>String(c.id)!==String(id));
+    }else if(kind==='t')db.students=db.students.filter(t=>String(t.id)!==String(id));
+    else if(kind==='o')db.courses=db.courses.filter(o=>String(o.id)!==String(id));
+    else if(kind==='x')db.exams=db.exams.filter(x=>String(x.id)!==String(id));
+    clean();
+  });
+  render();
+}
+
+function openCourse(id,from){
+  const co=db.courses.find(x=>String(x.id)===String(id));
+  if(!co)return;
+  const g=db.classes.find(x=>String(x.id)===String(co.classId));
+  if(!g)return;
+  v={page:'students',schoolId:g.schoolId,classId:g.id,courseId:co.id,tab:'att',from};
+  render();window.scrollTo(0,0);
+}
+function coursesTab(){
+  const g=db.classes.find(x=>String(x.id)===String(v.classId));
+  if(!g){v={page:'schools'};render();return;}
+  const list=db.courses.filter(o=>String(o.classId)===String(g.id));
+  $('title').innerHTML=esc(g.name)+'<small>درس‌ها</small>';
+  $('fab').hidden=false;$('fab').textContent='+ درس جدید';
+  $('app').innerHTML=tabsHtml()+(list.length?'<div class="group">'+list.map((o,i)=>row('o',o.id,color(i+4),String(o.name||'د')[0],o.name,fa(db.exams.filter(e=>String(e.classId)===String(o.id)).length)+' آزمون')).join('')+'</div>':emptyBox('درسی ثبت نشده','مثلاً «مدیریت تولید» را اضافه کن.'));
+}
+function addCourse(id){
+  const o=db.courses.find(x=>String(x.id)===String(id))||{};
+  sheet(id?'ویرایش درس':'درس جدید',[{k:'name',label:'نام درس',ph:'مثلاً مدیریت تولید'}],o,d=>{
+    if(!needName(d))return false;
+    if(id)o.name=d.name;
+    else db.courses.push({id:uid(),classId:v.classId,name:d.name});
+  });
+}
+
+function classTab(){
+  const co=db.courses.find(x=>String(x.id)===String(v.courseId));
+  if(!co){v={page:'schools'};render();return;}
+  const g=db.classes.find(x=>String(x.id)===String(co.classId));
+  if(!g){v={page:'schools'};render();return;}
+  const list=studentsOf(g.id);
+  v.tab=v.tab||'att';
+  $('title').innerHTML=esc(co.name)+'<small>'+esc(g.name)+' • '+fa(list.length)+' نفر</small>';
+  $('fab').hidden=!(v.tab==='exam'&&!v.examId&&list.length);
+  $('fab').textContent='+ آزمون جدید';
+  const body=!list.length?emptyBox('دانش‌آموزی ثبت نشده','اول دانش‌آموزان این کلاس را اضافه کن.'):
+    v.tab==='att'?attHtml(co,list):v.tab==='pts'?ptsHtml(list,co):examHtml(co,list);
+  $('app').innerHTML=tabsHtml()+body;
+}
+
+function createAttendanceSession(courseId,date){
+  const co=db.courses.find(x=>String(x.id)===String(courseId));
+  if(!co)return null;
+  const g=db.classes.find(x=>String(x.id)===String(co.classId));
+  if(!g)return null;
+  let r=db.attendance.find(a=>String(a.classId)===String(courseId)&&a.date===date);
+  if(!r){
+    r={id:uid(),classId:courseId,date,marks:{}};
+    db.attendance.push(r);
+  }
+  if(!isObject(r.marks))r.marks={};
+  return r;
+}
+function attHtml(co,list){
+  const d=v.date||today();
+  const r=db.attendance.find(a=>String(a.classId)===String(co.id)&&a.date===d);
+  const marks=r&&isObject(r.marks)?r.marks:{};
+  const absent=Object.values(marks).filter(x=>x==='a').length;
+  const late=Object.values(marks).filter(x=>x==='l').length;
+  const excused=Object.values(marks).filter(x=>x==='e').length;
+  const sessionButton=r?
+    '<button class="chip" disabled>✓ جلسه ثبت شده</button>':
+    '<button class="chip" data-act="session">ثبت جلسه (همه حاضر)</button>';
+  return `<div class="bar"><input type="date" id="adate" value="${esc(d)}"></div>
+    <div class="bar session">${sessionButton}</div>
+    <p class="hint" style="margin:0 2px 10px">${fdate(d)} • وضعیت پیش‌فرض همه حاضر است؛ فقط غایب، تأخیر یا موجه را مشخص کن.</p>
+    <p class="hint" style="margin:0 2px 10px">غایب: ${fa(absent)} • تأخیر: ${fa(late)} • موجه: ${fa(excused)}</p>
+    <div class="group">`+list.map(t=>{
+      const status=marks[t.id];
+      return `<div class="row" style="cursor:default"><div class="info"><b>${esc(t.name)}</b><span>${status?ST[status]:'حاضر'}</span></div><div class="seg">`+
+        Object.entries(ST).map(([k,n])=>`<button class="sg s-${k}${status===k?' on':''}" data-act="mark" data-id="${esc(t.id)}" data-s="${k}">${n}</button>`).join('')+
+        '</div></div>';
+    }).join('')+'</div>';
+}
+function mark(studentId,status){
+  const co=db.courses.find(x=>String(x.id)===String(v.courseId));
+  const g=co&&db.classes.find(x=>String(x.id)===String(co.classId));
+  const st=db.students.find(x=>String(x.id)===String(studentId));
+  if(!co||!g||!st||String(st.classId)!==String(g.id)||!Object.prototype.hasOwnProperty.call(ST,status)){
+    alert('این دانش‌آموز یا وضعیت حضور و غیاب معتبر نیست.');return;
+  }
+  const before=clone(db);
+  const r=createAttendanceSession(co.id,v.date||today());
+  if(!r)return;
+  if(r.marks[studentId]===status)delete r.marks[studentId];
+  else r.marks[studentId]=status;
+  if(save())render();else db=before;
+}
+function registerSession(){
+  const co=db.courses.find(x=>String(x.id)===String(v.courseId));
+  if(!co){alert('درس انتخاب‌شده معتبر نیست.');return;}
+  const date=v.date||today();
+  const existing=db.attendance.find(a=>String(a.classId)===String(co.id)&&a.date===date);
+  if(existing){alert('برای این تاریخ قبلاً جلسه ثبت شده است.');return;}
+  commitMutation(()=>{createAttendanceSession(co.id,date);});
+  render();
+}
+
+function ptsHtml(list,co){
+  return '<div class="group">'+list.map(t=>{
+    const p=db.points.filter(x=>String(x.studentId)===String(t.id)&&String(x.classId)===String(co.id));
+    const pos=p.filter(x=>Number(x.val)>0).length;
+    return `<div class="row" style="cursor:default"><div class="info"><b>${esc(t.name)}</b><span>مثبت ${fa(pos)} • منفی ${fa(p.length-pos)}</span></div>
+      <button class="pm plus" data-act="pm" data-id="${esc(t.id)}" data-v="1" aria-label="مثبت">+</button>
+      <button class="pm minus" data-act="pm" data-id="${esc(t.id)}" data-v="-1" aria-label="منفی">−</button></div>`;
+  }).join('')+'</div>';
+}
+function givePoint(studentId,val){
+  const co=db.courses.find(x=>String(x.id)===String(v.courseId));
+  const st=db.students.find(x=>String(x.id)===String(studentId));
+  const g=co&&db.classes.find(x=>String(x.id)===String(co.classId));
+  if(!co||!st||!g||String(st.classId)!==String(g.id)||![1,-1].includes(Number(val)))return;
+  sheet(val>0?'نمره مثبت':'نمره منفی',[{k:'reason',label:'دلیل (اختیاری)',ph:'مثلاً مشارکت خوب در کلاس'}],{},d=>{
+    db.points.push({id:uid(),studentId:st.id,classId:co.id,val:Number(val),reason:d.reason,date:today()});
+  });
+}
+function validScores(ex){
+  if(!ex||!isObject(ex.scores))return [];
+  return Object.values(ex.scores).map(Number).filter(n=>Number.isFinite(n)&&n>=0&&n<=Number(ex.max));
+}
+function avgOf(ex){
+  const scores=validScores(ex);
+  return scores.length?fa((scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1)):'—';
+}
+function examHtml(co,list){
+  if(v.examId){
+    const e=db.exams.find(x=>String(x.id)===String(v.examId));
+    if(!e)return emptyBox('آزمون پیدا نشد','به فهرست آزمون‌ها بازگرد.');
+    return `<p class="hint" style="margin:0 2px 10px">${esc(e.title)} • نمره از ${fa(e.max)} • با خروج از کادر ذخیره می‌شود</p><div class="group">`+
+      list.map(t=>`<div class="row" style="cursor:default"><div class="info"><b>${esc(t.name)}</b></div><input class="sc" inputmode="decimal" data-sid="${esc(t.id)}" value="${e.scores[t.id]??''}" placeholder="—"></div>`).join('')+'</div>';
+  }
+  const ex=db.exams.filter(x=>String(x.classId)===String(co.id)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  return ex.length?'<div class="group">'+ex.map((e,i)=>row('x',e.id,color(i+3),String(e.title||'آ')[0],e.title,String(e.date||'')+' • میانگین '+avgOf(e)+' از '+fa(e.max))).join('')+'</div>':
+    emptyBox('آزمونی ثبت نشده','با دکمه «آزمون جدید» شروع کن.');
+}
+function addExam(id){
+  const o=db.exams.find(x=>String(x.id)===String(id))||{};
+  sheet(id?'ویرایش آزمون':'آزمون جدید',[
+    {k:'name',label:'عنوان آزمون',ph:'مثلاً آزمون میان‌ترم'},
+    {k:'max',label:'نمره کل',ph:'20'}
+  ],{name:o.title||'',max:o.max??20},d=>{
+    if(!needName(d))return false;
+    const m=Number(fixNum(d.max));
+    if(!Number.isFinite(m)||m<=0||m>100000){alert('نمره کل باید عددی بزرگ‌تر از صفر و حداکثر ۱۰۰٬۰۰۰ باشد.');return false;}
+    if(id){
+      const oldScores=Object.values(o.scores||{}).map(Number).filter(Number.isFinite);
+      if(oldScores.some(n=>n>m)){
+        alert('نمره کل جدید از بعضی نمره‌های ثبت‌شده کمتر است. ابتدا آن نمره‌ها را اصلاح کن.');
+        return false;
+      }
+      o.title=d.name;o.max=m;
+    }else{
+      db.exams.push({id:uid(),classId:v.courseId,title:d.name,date:today(),max:m,scores:{}});
+    }
+  });
+}
+
+function scoreChange(t){
+  const ex=db.exams.find(x=>String(x.id)===String(v.examId));
+  if(!ex){alert('آزمون انتخاب‌شده پیدا نشد.');render();return;}
+  const sid=t.dataset.sid,old=ex.scores[sid],raw=fixNum(t.value);
+  if(raw===''){
+    if(old!==undefined){
+      const before=clone(db);delete ex.scores[sid];
+      if(save())return;
+      db=before;t.value=old;
+    }
+    return;
+  }
+  const n=Number(raw);
+  if(!Number.isFinite(n)||n<0||n>Number(ex.max)){
+    alert('نمره باید عددی بین صفر و '+fa(ex.max)+' باشد.');
+    t.value=old??'';return;
+  }
+  const before=clone(db);ex.scores[sid]=n;
+  if(!save()){db=before;t.value=old??'';}
+}
+
+const backupBar=()=>'<div class="bar"><button class="chip" data-act="backup">پشتیبان‌گیری</button><button class="chip" data-act="restore">بازیابی</button></div><input type="file" id="rf" accept=".json,application/json" hidden>';
+function downloadText(name,text,mime){
+  const blob=new Blob([text],{type:mime||'application/octet-stream'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+function backup(){
+  const payload={app:APP_NAME,formatVersion:FORMAT_VERSION,exportedAt:new Date().toISOString(),data:db};
+  downloadText('daftar-backup-'+today()+'.json',JSON.stringify(payload,null,2),'application/json');
+}
+function backupRaw(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw==null){alert('داده‌ای در حافظه محلی پیدا نشد.');return;}
+    downloadText('daftar-raw-recovery-'+today()+'.txt',raw,'text/plain;charset=utf-8');
+  }catch(e){alert('خواندن داده خام ممکن نیست.');}
+}
+function candidateFromBackup(obj){
+  if(!isObject(obj))throw new Error('ساختار فایل پشتیبان معتبر نیست.');
+  let source=obj;
+  if(Object.prototype.hasOwnProperty.call(obj,'app')||Object.prototype.hasOwnProperty.call(obj,'formatVersion')||Object.prototype.hasOwnProperty.call(obj,'data')){
+    if(obj.app!==APP_NAME)throw new Error('این فایل متعلق به برنامه دفتر نیست.');
+    if(!Number.isInteger(Number(obj.formatVersion))||Number(obj.formatVersion)<1||Number(obj.formatVersion)>FORMAT_VERSION)throw new Error('نسخه فایل پشتیبان پشتیبانی نمی‌شود.');
+    if(!isObject(obj.data))throw new Error('بخش اطلاعات فایل پشتیبان وجود ندارد.');
+    source=obj.data;
+  }
+  const d=empty();
+  for(const k of ARRAY_KEYS){
+    if(source[k]!==undefined&&!Array.isArray(source[k]))throw new Error('ساختار بخش '+k+' معتبر نیست.');
+    if(Array.isArray(source[k]))d[k]=source[k];
+  }
+  if(source.schedule!==undefined&&!isObject(source.schedule))throw new Error('برنامه هفتگی معتبر نیست.');
+  if(isObject(source.schedule))d.schedule=source.schedule;
+  if(source.settings!==undefined&&!isObject(source.settings))throw new Error('تنظیمات معتبر نیست.');
+  if(isObject(source.settings))d.settings=Object.assign(d.settings,source.settings);
+  if(!Array.isArray(d.settings.hidden))d.settings.hidden=[5,6];
+  d.settings.hidden=d.settings.hidden.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6);
+  d.settings.teacher=String(d.settings.teacher||'');
+  d.settings.school=String(d.settings.school||'');
+  d.settings.transpose=!!d.settings.transpose;
+  d.v2=source.v2||0;
+  const result=validateData(d,{allowLegacy:!d.v2});
+  if(!result.ok)throw new Error(result.message);
+  return d;
+}
+function restore(file){
+  if(!file)return;
+  if(file.size>MAX_BACKUP_BYTES){alert('حجم فایل پشتیبان بیشتر از ۲۰ مگابایت است.');return;}
+  const reader=new FileReader();
+  reader.onerror=()=>alert('خواندن فایل پشتیبان ممکن نشد.');
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(String(reader.result||''));
+      const candidate=candidateFromBackup(parsed);
+      const counts='مدرسه: '+fa(candidate.schools.length)+'\nکلاس: '+fa(candidate.classes.length)+
+        '\nدانش‌آموز: '+fa(candidate.students.length)+'\nدرس: '+fa(candidate.courses.length)+
+        '\nجلسه حضور و غیاب: '+fa(candidate.attendance.length)+'\nآزمون: '+fa(candidate.exams.length);
+      if(!confirm('اطلاعات فعلی با اطلاعات این فایل جایگزین شود؟\n\n'+counts+'\n\nپیشنهاد: قبل از بازیابی، از اطلاعات فعلی پشتیبان بگیر.'))return;
+      const previous=db;
+      const previousWarning=loadWarning;
+      db=candidate;
+      loadWarning='';
+      migrate(false);
+      clean();
+      if(!save()){db=previous;loadWarning=previousWarning;render();return;}
+      v={page:'schools'};render();
+      alert('بازیابی با موفقیت انجام شد.');
+    }catch(e){
+      alert('بازیابی انجام نشد؛ اطلاعات فعلی دست‌نخورده باقی ماند.\n'+(e.message||'فایل پشتیبان معتبر نیست.'));
+    }
+  };
+  reader.readAsText(file);
+}
+
+function planView(){
+  $('title').innerHTML='برنامه هفتگی<small>'+fdate(today())+'</small>';$('fab').hidden=true;
+  const hidden=db.settings.hidden,days=[0,1,2,3,4,5,6].filter(i=>!hidden.includes(i));
+  const weekday=(new Date().getDay()+1)%7,P=[1,2,3,4];
+  const cell=(d,p)=>{
+    const co=db.courses.find(x=>String(x.id)===String(db.schedule[d+'-'+p]));
+    if(!co)return `<button class="cell empty" data-act="cell" data-d="${d}" data-p="${p}" aria-label="افزودن درس">+</button>`;
+    const g=db.classes.find(x=>String(x.id)===String(co.classId));
+    return `<button class="cell" style="background:${color(db.courses.indexOf(co)+4)}" data-act="cell" data-d="${d}" data-p="${p}"><b>${esc(co.name)}</b><span>${esc(g?g.name:'')}</span></button>`;
+  };
+  let h='';
+  if(!db.settings.transpose){
+    h='<div class="grid" style="grid-template-columns:26px repeat('+Math.max(days.length,1)+',minmax(0,1fr))"><div></div>'+
+      days.map(i=>`<div class="dh${i===weekday?' today':''}">${DAYS[i]}</div>`).join('')+
+      P.map(p=>`<div class="ph">${fa(p)}</div>`+days.map(d=>cell(d,p)).join('')).join('');
+  }else{
+    h='<div class="grid" style="grid-template-columns:56px repeat(4,minmax(0,1fr))"><div></div>'+
+      P.map(p=>`<div class="dh">زنگ ${fa(p)}</div>`).join('')+
+      days.map(d=>`<div class="dh${d===weekday?' today':''}">${DAYS[d]}</div>`+P.map(p=>cell(d,p)).join('')).join('');
+  }
+  $('app').innerHTML=h+'</div>'+(Object.keys(db.schedule).length?'':'<p class="hint" style="margin-top:14px">با زدن + روی هر زنگ، درس آن زنگ را انتخاب کن. ابتدا از بخش «مدارس» پایه و رشته و درس بساز.</p>');
+}
+function choose(title,opts){
+  $('modal').innerHTML=`<div class="sheet-bg"><div class="sheet" role="dialog" aria-modal="true"><h2>${esc(title)}</h2><div class="group">`+
+    opts.map((o,i)=>`<div class="row" data-i="${i}"><div class="info"><b>${esc(o[0])}</b>${o[2]?'<span>'+esc(o[2])+'</span>':''}</div></div>`).join('')+
+    '</div><div class="actions"><button class="btn no" id="no">بستن</button></div></div></div>';
+  $('no').onclick=closeSheet;
+  $('modal').onclick=e=>{
+    if(e.target.classList.contains('sheet-bg'))return closeSheet();
+    const r=e.target.closest('[data-i]');
+    if(r){const fn=opts[Number(r.dataset.i)][1];closeSheet();fn();}
+  };
+}
+function cellTap(d,p){
+  const key=d+'-'+p,id=db.schedule[key],title=DAYS[d]+' • زنگ '+fa(p);
+  const pick=()=>{
+    if(!db.courses.length){alert('اول از بخش «مدارس» یک پایه و رشته و درس بساز.');return;}
+    choose(title,db.courses.map(o=>{
+      const g=db.classes.find(x=>String(x.id)===String(o.classId));
+      const s=g&&db.schools.find(x=>String(x.id)===String(g.schoolId));
+      return [o.name,()=>{commitMutation(()=>{db.schedule[key]=o.id;});render();},(g?g.name:'')+' • '+(s?s.name:'')];
+    }));
+  };
+  if(!id)return pick();
+  choose(title,[
+    ['باز کردن درس',()=>openCourse(id,'plan')],
+    ['تغییر درس',pick],
+    ['خالی کردن این زنگ',()=>{commitMutation(()=>{delete db.schedule[key];});render();}]
+  ]);
+}
+function settingsView(){
+  $('title').textContent='تنظیمات';$('fab').hidden=true;
+  const st=db.settings;
+  $('app').innerHTML=
+    '<p class="hint" style="margin:0 2px 8px">روزهایی که در برنامه هفتگی نمایش داده می‌شوند:</p><div class="tabs" style="flex-wrap:wrap">'+
+    DAYS.map((n,i)=>`<button class="tab${st.hidden.includes(i)?'':' on'}" data-act="day" data-i="${i}">${n}</button>`).join('')+
+    '</div><p class="hint" style="margin:0 2px 8px">جهت جدول برنامه در میز کار:</p><div class="tabs">'+
+    `<button class="tab${st.transpose?'':' on'}" data-act="orient" data-o="0">روزها در ستون</button>`+
+    `<button class="tab${st.transpose?' on':''}" data-act="orient" data-o="1">روزها در سطر</button></div>`+
+    '<div class="group" style="margin:12px 0 18px"><div class="row" data-act="prof"><div class="info"><b>مشخصات سربرگ گزارش</b><span>'+
+    esc(st.teacher||'نام معلم')+' • '+esc(st.school||'نام مدرسه')+'</span></div></div></div>'+
+    '<p class="hint" style="margin:0 2px 8px">پشتیبان‌گیری از اطلاعات:</p>'+backupBar();
+}
+function stat(co,t){
+  const att=db.attendance.filter(a=>String(a.classId)===String(co.id)),m={a:0,l:0,e:0};
+  att.forEach(a=>{const x=a.marks&&a.marks[t.id];if(x&&m[x]!==undefined)m[x]++;});
+  return{
+    m,sessions:att.length,
+    pts:db.points.filter(p=>String(p.studentId)===String(t.id)&&String(p.classId)===String(co.id)),
+    ex:db.exams.filter(e=>String(e.classId)===String(co.id)).map(e=>({title:e.title,max:e.max,score:e.scores&&e.scores[t.id]}))
+  };
+}
+const RT=[['parent','والدین','گزارش رسمی درباره یک دانش‌آموز، همراه با متن خطاب به ولی'],['admin','مدیر یا معاون','گزارش رسمی درباره یک مدرسه، همراه با توضیحات کامل'],['gen','کلی','برای خودت یا ارائه به هر شخص دیگر؛ گزارش یک درس']];
+const schoolOf=g=>db.schools.find(x=>String(x.id)===String(g.schoolId));
+const lowCount=x=>x.ex.filter(e=>e.score!=null&&Number(e.score)<Number(e.max)/2).length;
+function parentReport(g,t){
+  const sc=db.settings.school||(schoolOf(g)||{}).name||'';
+  const L=['با سلام و احترام','ولی محترم دانش‌آموز «'+t.name+'»','',
+    'با آرزوی سلامتی و موفقیت برای شما و فرزند عزیزتان؛ این گزارش به منظور اطلاع‌رسانی از روند تحصیلی و انضباطی فرزندتان، دانش‌آموز پایه و رشته «'+g.name+'» در مدرسه «'+sc+'»، تهیه شده است. اطلاعات آن بر اساس سوابق ثبت‌شده توسط معلم تا تاریخ '+fdate(today())+' تنظیم شده و همکاری و پیگیری شما در کنار مدرسه نقش مهمی در پیشرفت تحصیلی فرزندتان دارد.',''];
+  const cs=db.courses.filter(o=>String(o.classId)===String(g.id));
+  if(!cs.length)L.push('هنوز درسی برای این پایه ثبت نشده است.','');
+  cs.forEach(co=>{
+    const x=stat(co,t),pos=x.pts.filter(p=>p.val>0).length;
+    L.push('■ درس '+co.name,`حضور و غیاب: ${fa(x.m.a)} جلسه غیبت، ${fa(x.m.l)} تأخیر و ${fa(x.m.e)} غیبت موجه، از ${fa(x.sessions)} جلسه ثبت‌شده.`,'نمرات آزمون‌ها:');
+    if(!x.ex.length)L.push('- هنوز آزمونی ثبت نشده است.');
+    x.ex.forEach(e=>L.push('- '+e.title+': '+(e.score==null?'ثبت نشده':fa(e.score)+' از '+fa(e.max))));
+    L.push(`نمره مثبت (تشویق): ${fa(pos)} مورد • نمره منفی (تذکر): ${fa(x.pts.length-pos)} مورد`);
+    x.pts.forEach(p=>{if(p.reason)L.push((p.val>0?'+ ':'− ')+p.reason);});
+    L.push('');
+  });
+  L.push('توضیح: «غیبت» به معنای غیبت غیرموجه است و «غیبت موجه» غیبتی است که با دلیل پذیرفته شده است. نمره مثبت و منفی بر اساس رفتار و مشارکت دانش‌آموز در کلاس ثبت می‌شود.','',
+    'در صورت نیاز به توضیح بیشتر یا هماهنگی برای گفت‌وگو درباره وضعیت تحصیلی فرزندتان، خواهشمند است با مدرسه یا معلم تماس بگیرید.','','با تشکر و احترام');
+  if(db.settings.teacher)L.push(db.settings.teacher);
+  return L;
+}
+function adminReport(sc){
+  const L=['با سلام و احترام','مدیر / معاون محترم مدرسه «'+sc.name+'»','',
+    'با آرزوی توفیق؛ این گزارش خلاصه‌ای از وضعیت حضور و غیاب، آزمون‌ها و موارد نیازمند توجه در کلاس‌هایی است که در آن مدرسه تدریس می‌شود و بر اساس سوابق ثبت‌شده تا تاریخ '+fdate(today())+' تنظیم شده است. در پایان فهرست دانش‌آموزانی آمده که پیگیری آنها پیشنهاد می‌شود.',''];
+  const need=[];
+  db.classes.filter(g=>String(g.schoolId)===String(sc.id)).forEach(g=>{
+    const list=studentsOf(g.id);
+    L.push('■ '+g.name+' ('+fa(list.length)+' دانش‌آموز)');
+    db.courses.filter(o=>String(o.classId)===String(g.id)).forEach(co=>{
+      const xs=list.map(t=>stat(co,t)),n=k=>xs.reduce((a,x)=>a+x.m[k],0);
+      L.push('• درس '+co.name+': '+fa(db.attendance.filter(a=>String(a.classId)===String(co.id)).length)+' جلسه ثبت‌شده؛ مجموع غیبت '+fa(n('a'))+'، تأخیر '+fa(n('l'))+'، غیبت موجه '+fa(n('e')));
+      db.exams.filter(e=>String(e.classId)===String(co.id)).forEach(e=>L.push('   آزمون '+e.title+': میانگین '+avgOf(e)+' از '+fa(e.max)));
+      list.forEach((t,i)=>{const x=xs[i],low=lowCount(x);if(x.m.a>=3||low)need.push('- '+t.name+' ('+g.name+'، '+co.name+'): غیبت '+fa(x.m.a)+(low?'، نمره پایین در '+fa(low)+' آزمون':''));});
+    });
+    L.push('');
+  });
+  L.push('موارد نیازمند توجه (۳ غیبت یا بیشتر، یا نمره کمتر از نصف نمره کل):',...(need.length?need:['- موردی ثبت نشده است.']),'',
+    'خواهشمند است در صورت صلاح‌دید، هماهنگی لازم برای پیگیری موارد فوق با مشاور و اولیا انجام شود.','','با تشکر و احترام');
+  if(db.settings.teacher)L.push(db.settings.teacher);
+  return L;
+}
+function genReport(co){
+  const g=db.classes.find(x=>String(x.id)===String(co.classId)),list=studentsOf(g.id),ex=db.exams.filter(e=>String(e.classId)===String(co.id));
+  const L=[db.settings.school||(schoolOf(g)||{}).name||'',g.name+' • درس '+co.name,'تاریخ: '+fdate(today()),'','آزمون‌ها:'];
+  if(!ex.length)L.push('- ثبت نشده');
+  ex.forEach(e=>L.push('- '+e.title+': میانگین '+avgOf(e)+' از '+fa(e.max)));
+  L.push('','دانش‌آموزان ('+fa(list.length)+' نفر):');
+  list.forEach(t=>{
+    const x=stat(co,t),pos=x.pts.filter(p=>p.val>0).length,scores=x.ex.filter(e=>e.score!=null&&Number(e.max)>0);
+    L.push('- '+t.name+': غیبت '+fa(x.m.a)+' • تأخیر '+fa(x.m.l)+' • مثبت '+fa(pos)+' • منفی '+fa(x.pts.length-pos)+
+      (scores.length?' • میانگین آزمون‌ها '+fa(Math.round(scores.reduce((a,e)=>a+Number(e.score)/Number(e.max),0)/scores.length*100))+'٪':''));
+  });
+  return L;
+}
+function reportView(){
+  $('title').textContent='گزارش‌ها';$('fab').hidden=true;
+  const r=v.rep,app=$('app'),back='<div class="tabs noprint"><button class="tab" data-act="repback">← بازگشت</button></div>';
+  const rows=items=>'<div class="group">'+items.map(([id,a,b])=>`<div class="row" data-act="${r.id?'rstu':'rpick'}" data-id="${esc(id)}"><div class="info"><b>${esc(a)}</b><span>${esc(b)}</span></div></div>`).join('')+'</div>';
+  if(!r){
+    app.innerHTML='<p class="hint" style="margin:0 2px 8px">نوع گزارش را انتخاب کن:</p><div class="group>'+
+      RT.map(([k,n,d])=>`<div class="row" data-act="rtype" data-t="${k}"><div class="info"><b>${n}</b><span>${d}</span></div></div>`).join('')+'</div>';return;
+  }
+  if(!r.id){
+    const it=r.type==='parent'?db.classes.map(g=>[g.id,g.name,(schoolOf(g)||{}).name||'']):
+      r.type==='admin'?db.schools.map(s=>[s.id,s.name,fa(db.classes.filter(g=>String(g.schoolId)===String(s.id)).length)+' پایه و رشته']):
+      db.courses.map(o=>{const g=db.classes.find(x=>String(x.id)===String(o.classId));return [o.id,o.name,(g?g.name:'')+' • '+((g&&schoolOf(g)||{}).name||'')];});
+    app.innerHTML=back+'<p class="hint" style="margin:0 2px 8px">'+(r.type==='parent'?'پایه و رشته دانش‌آموز را انتخاب کن:':r.type==='admin'?'مدرسه را انتخاب کن:':'درس را انتخاب کن:')+'</p>'+
+      (it.length?rows(it):emptyBox('موردی ثبت نشده','اول از بخش «مدارس» اطلاعات را وارد کن.'));return;
+  }
+  if(r.type==='parent'&&!r.sid){
+    const l=studentsOf(r.id);
+    app.innerHTML=back+'<p class="hint" style="margin:0 2px 8px">دانش‌آموز را انتخاب کن:</p>'+
+      (l.length?rows(l.map(t=>[t.id,t.name,t.number?'شماره: '+t.number:''])):emptyBox('دانش‌آموزی ثبت نشده','اول دانش‌آموزان این پایه را اضافه کن.'));return;
+  }
+  const L=r.type==='parent'?parentReport(db.classes.find(x=>String(x.id)===String(r.id)),db.students.find(x=>String(x.id)===String(r.sid))):
+    r.type==='admin'?adminReport(db.schools.find(x=>String(x.id)===String(r.id))):genReport(db.courses.find(x=>String(x.id)===String(r.id)));
+  v.text=L.join('\n');
+  app.innerHTML=back+`<div class="paper">${esc(v.text)}</div><div class="bar noprint"><button class="chip" data-act="print">چاپ / ذخیره PDF</button><button class="chip" data-act="share">اشتراک‌گذاری</button></div>`;
+}
+function share(){
+  const t=v.text||'';
+  if(navigator.share)navigator.share({title:'گزارش دفتر',text:t}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>alert('متن گزارش کپی شد.')).catch(()=>alert('کپی متن در این مرورگر ممکن نیست.'));
+  else alert('اشتراک‌گذاری در این مرورگر ممکن نیست.');
+}
+
+/* رویدادهای اصلی برنامه */
+$('nav').addEventListener('click',e=>{
+  const b=e.target.closest('[data-nav]');if(!b)return;
+  v=b.dataset.nav==='schools'?{page:'schools'}:{nav:b.dataset.nav};
+  render();window.scrollTo(0,0);
+});
+$('app').addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const {act,k,id}=el.dataset;
+  if(act==='rawbackup')return backupRaw();
+  if(act==='bulk')return bulk();
+  if(act==='cell')return cellTap(Number(el.dataset.d),Number(el.dataset.p));
+  if(act==='session')return registerSession();
+  if(act==='orient'){
+    const before=clone(db);db.settings.transpose=el.dataset.o==='1';
+    if(!save())db=before;return render();
+  }
+  if(act==='rtype'){v={nav:'report',rep:{type:el.dataset.t}};return render();}
+  if(act==='rpick'){v.rep.id=id;return render();}
+  if(act==='rstu'){v.rep.sid=id;return render();}
+  if(act==='repback'){
+    if(v.rep.sid)v.rep.sid=null;
+    else if(v.rep.id)v.rep.id=null;
+    else v={nav:'report'};
+    return render();
+  }
+  if(act==='print')return window.print();
+  if(act==='share')return share();
+  if(act==='day'){
+    const before=clone(db),i=Number(el.dataset.i),h=db.settings.hidden;
+    if(h.includes(i))db.settings.hidden=h.filter(x=>x!==i);
+    else if(h.length<6)h.push(i);
+    if(!save())db=before;return render();
+  }
+  if(act==='prof'){
+    const st=db.settings;
+    return sheet('مشخصات سربرگ گزارش',[{k:'teacher',label:'نام معلم'},{k:'school',label:'نام مدرسه (اختیاری)'}],st,d=>{
+      st.teacher=d.teacher;st.school=d.school;
+    });
+  }
+  if(act==='tab'){v.tab=el.dataset.t;v.examId=null;return render();}
+  if(act==='mark')return mark(id,el.dataset.s);
+  if(act==='pm')return givePoint(id,Number(el.dataset.v));
+  if(act==='backup')return backup();
+  if(act==='restore')return $('rf').click();
+  if(act==='edit'){e.stopPropagation();return addOrEdit(k,id);}
+  if(act==='del'){e.stopPropagation();return remove(k,id);}
+  if(act==='open'){
+    if(k==='s')v={page:'classes',schoolId:id};
+    else if(k==='c')v={page:'students',schoolId:v.schoolId,classId:id};
+    else if(k==='t')return addOrEdit('t',id);
+    else if(k==='x'){v.examId=id;render();window.scrollTo(0,0);return;}
+    else if(k==='o')return openCourse(id);
+    render();window.scrollTo(0,0);
+  }
+});
+$('fab').onclick=()=>addOrEdit(v.page==='students'?(v.courseId?'x':v.tab==='courses'?'o':'t'):{schools:'s',classes:'c'}[v.page]);
+$('back').onclick=()=>{
+  if(v.examId){v.examId=null;render();return;}
+  if(v.courseId){
+    v=v.from==='plan'?{nav:'plan'}:{page:'students',schoolId:v.schoolId,classId:v.classId,tab:'courses'};
+    render();return;
+  }
+  v=v.page==='students'?{page:'classes',schoolId:v.schoolId}:{page:'schools'};
+  render();
+};
+$('app').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='adate'){v.date=t.value||today();render();return;}
+  if(t.id==='rf'&&t.files&&t.files[0]){restore(t.files[0]);t.value='';return;}
+  if(t.classList.contains('sc')){scoreChange(t);return;}
+});
+
+if(!loadWarning){
+  migrate(true);
+  clean();
+}
+render();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
