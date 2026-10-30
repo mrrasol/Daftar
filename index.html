@@ -24,7 +24,7 @@ header{position:sticky;top:0;z-index:5;background:var(--primary);color:#fff;padd
 header h1{font-size:19px;margin:0;font-weight:700;flex:1}
 header small{display:block;font-size:12.5px;font-weight:400;opacity:.8;line-height:1.4}
 .back{background:rgba(255,255,255,.16);border:0;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer}
-main{max-width:640px;margin:0 auto;padding:14px 14px 110px}
+main{max-width:640px;margin:0 auto;padding:14px 14px 150px}
 .group{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
 .row:last-child{border-bottom:0}
@@ -40,7 +40,7 @@ main{max-width:640px;margin:0 auto;padding:14px 14px 110px}
 .empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
 .bar{display:flex;gap:8px;margin-bottom:12px}
 .chip{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--primary);font:inherit;font-weight:600;padding:9px;border-radius:12px;cursor:pointer}
-.fab{position:fixed;inset-inline-start:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--accent);color:#2a1c00;border:0;border-radius:18px;height:56px;padding:0 20px;font:inherit;font-weight:700;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer}
+.fab{position:fixed;inset-inline-start:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);background:var(--accent);color:#2a1c00;border:0;border-radius:18px;height:56px;padding:0 20px;font:inherit;font-weight:700;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer}
 .sheet-bg{position:fixed;inset:0;background:rgba(10,25,23,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
 .sheet{background:var(--panel);width:100%;max-width:640px;border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 16px);animation:up .18s ease-out}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
@@ -54,6 +54,17 @@ textarea{min-height:140px;resize:vertical}
 .btn{flex:1;font:inherit;font-weight:700;border-radius:12px;padding:12px;border:0;cursor:pointer}
 .btn.ok{background:var(--primary);color:#fff}
 .btn.no{background:var(--line);color:var(--ink)}
+nav{position:fixed;bottom:0;inset-inline:0;background:var(--panel);border-top:1px solid var(--line);display:flex;gap:4px;padding:6px 8px calc(env(safe-area-inset-bottom,0px) + 6px);z-index:6}
+.nv{flex:1;background:none;border:0;font:inherit;font-size:14px;font-weight:600;color:var(--muted);padding:10px 4px;border-radius:12px;cursor:pointer}
+.nv.on{color:var(--primary);background:var(--primary-soft)}
+.grid{display:grid;gap:5px}
+.dh,.ph{text-align:center;font-size:12px;font-weight:700;color:var(--muted);align-self:center}
+.dh{padding:6px 0;border-radius:10px}.dh.today{background:var(--accent);color:#2a1c00}
+.cell{min-height:70px;border:0;border-radius:11px;color:#fff;font:inherit;padding:5px 3px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;overflow:hidden}
+.cell b{font-size:12px;line-height:1.3}.cell span{font-size:10.5px;opacity:.85;line-height:1.2}
+.cell.empty{background:var(--panel);color:var(--muted);border:1.5px dashed var(--line);font-size:20px}
+.paper{white-space:pre-wrap;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;line-height:2;margin-bottom:12px}
+@media print{header,nav,.fab,.noprint,#modal{display:none!important}body{background:#fff;color:#000}.paper{border:0;padding:0}main{padding:0}}
 .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px}
 .tab{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:inherit;font-weight:600;font-size:14px;padding:7px 14px;border-radius:20px;cursor:pointer}
@@ -73,6 +84,7 @@ input[type=date]{max-width:220px}
   <h1 id="title"></h1>
 </header>
 <main id="app"></main>
+<nav id="nav"></nav>
 <button class="fab" id="fab"></button>
 <div id="modal"></div>
 
@@ -80,9 +92,9 @@ input[type=date]{max-width:220px}
 const KEY = 'classapp-v1';
 const COLORS = ['#0f5e57','#7c4dbd','#c2570c','#1d6fb8','#b0316b','#5b7a1f'];
 let db = load();
-let v = { page: 'schools', schoolId: null, classId: null };
+let v = { nav: 'plan' };
 
-function empty(){ return { schools: [], classes: [], students: [], attendance: [], points: [], exams: [] }; }
+function empty(){ return { schools: [], classes: [], students: [], attendance: [], points: [], exams: [], courses: [], schedule: {}, settings: { hidden: [5, 6], teacher: '', school: '' } }; }
 function load(){
   try { return Object.assign(empty(), JSON.parse(localStorage.getItem(KEY)) || {}); }
   catch(e){ return empty(); }
@@ -100,7 +112,10 @@ const $ = id => document.getElementById(id);
 function render(){
   const app = $('app'), back = $('back'), fab = $('fab');
   let html = '';
-  back.hidden = v.page === 'schools'; fab.hidden = false;
+  back.hidden = ['plan','report','set'].includes(v.nav) || v.page === 'schools'; fab.hidden = false; drawNav();
+  if (v.nav === 'plan') return planView();
+  if (v.nav === 'report') return reportView();
+  if (v.nav === 'set') return settingsView();
   if (v.page === 'schools') {
     $('title').textContent = 'مدرسه‌ها';
     fab.textContent = '+ مدرسه جدید';
@@ -111,26 +126,26 @@ function render(){
   }
   if (v.page === 'classes') {
     const s = db.schools.find(x => x.id === v.schoolId);
-    $('title').innerHTML = esc(s.name) + '<small>کلاس‌ها</small>';
-    fab.textContent = '+ کلاس جدید';
+    $('title').innerHTML = esc(s.name) + '<small>پایه و رشته‌ها</small>';
+    fab.textContent = '+ پایه و رشته';
     const list = db.classes.filter(c => c.schoolId === s.id);
     html = list.length ? '<div class="group">' + list.map((c, i) => {
       const n = db.students.filter(t => t.classId === c.id).length;
-      return row('c', c.id, color(i + 1), c.name[0], c.name, [c.subject, n ? fa(n) + ' دانش‌آموز' : 'بدون دانش‌آموز'].filter(Boolean).join(' • '));
-    }).join('') + '</div>' : emptyBox('کلاسی در این مدرسه نیست', 'کلاس و درس مورد نظرت را اضافه کن.');
+      return row('c', c.id, color(i + 1), c.name[0], c.name, [fa(db.courses.filter(o => o.classId === c.id).length) + ' درس', n ? fa(n) + ' دانش‌آموز' : 'بدون دانش‌آموز'].join(' • '));
+    }).join('') + '</div>' : emptyBox('پایه و رشته‌ای ثبت نشده', 'مثلاً «یازدهم مکانیک» را اضافه کن.');
   }
-  if (v.page === 'students' && v.tab && v.tab !== 'list') return classTab();
+  if (v.page === 'students' && v.courseId) return classTab();
+  if (v.page === 'students' && v.tab === 'courses') return coursesTab();
   if (v.page === 'students') {
     const c = db.classes.find(x => x.id === v.classId);
     const list = db.students.filter(t => t.classId === c.id).sort((a, b) => a.name.localeCompare(b.name, 'fa'));
-    $('title').innerHTML = esc(c.name) + '<small>' + esc(c.subject || 'دانش‌آموزان') + ' • ' + fa(list.length) + ' نفر</small>';
+    $('title').innerHTML = esc(c.name) + '<small>' + 'دانش‌آموزان' + ' • ' + fa(list.length) + ' نفر</small>';
     fab.textContent = '+ دانش‌آموز جدید';
     const bar = tabsHtml() + '<div class="bar"><button class="chip" data-act="bulk">افزودن گروهی (چند نام با هم)</button></div>';
     html = bar + (list.length ? '<div class="group">' + list.map((t, i) =>
       row('t', t.id, color(i + 2), t.name[0], t.name, t.number ? 'شماره: ' + esc(t.number) : '')).join('') + '</div>'
       : emptyBox('دانش‌آموزی ثبت نشده', 'یکی یکی اضافه کن یا لیست اسامی را یک‌جا وارد کن.'));
   }
-  if (v.page === 'schools') html = backupBar() + html;
   app.innerHTML = html;
 }
 function row(kind, id, col, letter, name, sub){
@@ -157,11 +172,12 @@ function sheet(title, fields, vals, onOk, hint){
     if (onOk(out) !== false) { closeSheet(); save(); render(); }
   };
 }
-function closeSheet(){ $('modal').innerHTML = ''; }
+function closeSheet(){ $('modal').innerHTML = ''; $('modal').onclick = null; }
 const needName = o => { if (!o.name) { alert('نام را وارد کن.'); return false; } };
 
 function addOrEdit(kind, id){
   if (kind === 'x') return addExam(id);
+  if (kind === 'o') return addCourse(id);
   if (kind === 's') {
     const o = db.schools.find(x => x.id === id) || {};
     sheet(id ? 'ویرایش مدرسه' : 'مدرسه جدید', [{k:'name', label:'نام مدرسه', ph:'مثلاً هنرستان شهید بهشتی'}], o, d => {
@@ -171,12 +187,9 @@ function addOrEdit(kind, id){
   }
   if (kind === 'c') {
     const o = db.classes.find(x => x.id === id) || {};
-    sheet(id ? 'ویرایش کلاس' : 'کلاس جدید', [
-      {k:'name', label:'نام کلاس', ph:'مثلاً دهم الکترونیک'},
-      {k:'subject', label:'درس', ph:'مثلاً دانش فنی پایه'}], o, d => {
+    sheet(id ? 'ویرایش پایه و رشته' : 'پایه و رشته جدید', [{k:'name', label:'نام پایه و رشته', ph:'مثلاً یازدهم مکانیک'}], o, d => {
       if (needName(d) === false) return false;
-      if (id) { o.name = d.name; o.subject = d.subject; }
-      else db.classes.push({ id: uid(), schoolId: v.schoolId, name: d.name, subject: d.subject });
+      if (id) o.name = d.name; else db.classes.push({ id: uid(), schoolId: v.schoolId, name: d.name });
     });
   }
   if (kind === 't') {
@@ -198,6 +211,7 @@ function bulk(){
   }, 'لیست را از اکسل یا هر جای دیگر کپی و اینجا بچسبان.');
 }
 function remove(kind, id){
+  if (kind === 'o') { if (!confirm('این درس با حضور و غیاب، آزمون‌ها و نمره‌هایش حذف شود؟')) return; db.courses = db.courses.filter(o => o.id !== id); clean(); save(); render(); return; }
   if (kind === 'x') { if (!confirm('این آزمون حذف شود؟')) return; db.exams = db.exams.filter(e => e.id !== id); save(); render(); return; }
   if (kind === 's') {
     if (!confirm('این مدرسه با همه کلاس‌ها و دانش‌آموزانش حذف شود؟')) return;
@@ -218,21 +232,22 @@ function remove(kind, id){
   clean(); save(); render();
 }
 
-const TABS = [['list','دانش‌آموزان'],['att','حضور و غیاب'],['pts','مثبت و منفی'],['exam','آزمون‌ها']];
+const TG = [['list','دانش‌آموزان'],['courses','درس‌ها']], TC = [['att','حضور و غیاب'],['pts','مثبت و منفی'],['exam','آزمون‌ها']];
 const ST = { a:'غایب', l:'تأخیر', e:'موجه' };
-const tabsHtml = () => '<div class="tabs">' + TABS.map(([k, n]) => `<button class="tab${(v.tab || 'list') === k ? ' on' : ''}" data-act="tab" data-t="${k}">${n}</button>`).join('') + '</div>';
+const tabsHtml = () => { const T = v.courseId ? TC : TG, cur = v.tab || (v.courseId ? 'att' : 'list'); return '<div class="tabs">' + T.map(([k, n]) => `<button class="tab${cur === k ? ' on' : ''}" data-act="tab" data-t="${k}">${n}</button>`).join('') + '</div>'; };
 const studentsOf = id => db.students.filter(t => t.classId === id).sort((a, b) => a.name.localeCompare(b.name, 'fa'));
 const today = () => { const n = new Date(); return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0'); };
 const fdate = d => new Date(d + 'T12:00:00').toLocaleDateString('fa-IR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 const fixNum = s => String(s).trim().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٫,،]/g, '.');
 
 function classTab(){
-  const c = db.classes.find(x => x.id === v.classId), list = studentsOf(c.id), fab = $('fab');
-  $('title').innerHTML = esc(c.name) + '<small>' + esc(c.subject || '') + ' • ' + fa(list.length) + ' نفر</small>';
+  const co = db.courses.find(x => x.id === v.courseId), g = db.classes.find(x => x.id === co.classId), list = studentsOf(g.id), fab = $('fab');
+  v.tab = v.tab || 'att';
+  $('title').innerHTML = esc(co.name) + '<small>' + esc(g.name) + ' • ' + fa(list.length) + ' نفر</small>';
   fab.hidden = !(v.tab === 'exam' && !v.examId && list.length);
   fab.textContent = '+ آزمون جدید';
-  const body = !list.length ? emptyBox('دانش‌آموزی ثبت نشده', 'از زبانه «دانش‌آموزان» شروع کن.')
-    : v.tab === 'att' ? attHtml(c, list) : v.tab === 'pts' ? ptsHtml(list) : examHtml(c, list);
+  const body = !list.length ? emptyBox('دانش‌آموزی ثبت نشده', 'اول دانش‌آموزان «' + esc(g.name) + '» را اضافه کن.')
+    : v.tab === 'att' ? attHtml(co, list) : v.tab === 'pts' ? ptsHtml(list, co) : examHtml(co, list);
   $('app').innerHTML = tabsHtml() + body;
 }
 function attHtml(c, list){
@@ -245,14 +260,14 @@ function attHtml(c, list){
 }
 function mark(id, s){
   const d = v.date || today();
-  let r = db.attendance.find(a => a.classId === v.classId && a.date === d);
-  if (!r) { r = { id: uid(), classId: v.classId, date: d, marks: {} }; db.attendance.push(r); }
+  let r = db.attendance.find(a => a.classId === v.courseId && a.date === d);
+  if (!r) { r = { id: uid(), classId: v.courseId, date: d, marks: {} }; db.attendance.push(r); }
   if (r.marks[id] === s) delete r.marks[id]; else r.marks[id] = s;
   save(); render();
 }
-function ptsHtml(list){
+function ptsHtml(list, co){
   return '<div class="group">' + list.map(t => {
-    const p = db.points.filter(x => x.studentId === t.id), pos = p.filter(x => x.val > 0).length;
+    const p = db.points.filter(x => x.studentId === t.id && x.classId === co.id), pos = p.filter(x => x.val > 0).length;
     return `<div class="row" style="cursor:default"><div class="info"><b>${esc(t.name)}</b><span>مثبت ${fa(pos)} • منفی ${fa(p.length - pos)}</span></div>
       <button class="pm plus" data-act="pm" data-id="${t.id}" data-v="1" aria-label="مثبت">+</button>
       <button class="pm minus" data-act="pm" data-id="${t.id}" data-v="-1" aria-label="منفی">−</button></div>`;
@@ -260,7 +275,7 @@ function ptsHtml(list){
 }
 function givePoint(id, val){
   sheet(val > 0 ? 'نمره مثبت' : 'نمره منفی', [{ k:'reason', label:'دلیل (اختیاری)', ph:'مثلاً مشارکت خوب در کلاس' }], {}, d => {
-    db.points.push({ id: uid(), studentId: id, classId: v.classId, val, reason: d.reason, date: today() });
+    db.points.push({ id: uid(), studentId: id, classId: v.courseId, val, reason: d.reason, date: today() });
   });
 }
 function examHtml(c, list){
@@ -280,7 +295,7 @@ function addExam(id){
   sheet(id ? 'ویرایش آزمون' : 'آزمون جدید', [{ k:'name', label:'عنوان آزمون', ph:'مثلاً آزمون میان‌ترم' }, { k:'max', label:'نمره کل', ph:'20' }], { name: o.title, max: o.max }, d => {
     if (needName(d) === false) return false;
     const m = parseFloat(fixNum(d.max)) || 20;
-    if (id) { o.title = d.name; o.max = m; } else db.exams.push({ id: uid(), classId: v.classId, title: d.name, date: today(), max: m, scores: {} });
+    if (id) { o.title = d.name; o.max = m; } else db.exams.push({ id: uid(), classId: v.courseId, title: d.name, date: today(), max: m, scores: {} });
   });
 }
 const backupBar = () => '<div class="bar"><button class="chip" data-act="backup">پشتیبان‌گیری</button><button class="chip" data-act="restore">بازیابی</button></div><input type="file" id="rf" accept=".json,application/json" hidden>';
@@ -303,16 +318,206 @@ function restore(f){
   r.readAsText(f);
 }
 function clean(){
-  const sid = new Set(db.students.map(t => t.id)), cid = new Set(db.classes.map(c => c.id));
-  db.points = db.points.filter(p => sid.has(p.studentId));
+  const gid = new Set(db.classes.map(c => c.id)), sid = new Set(db.students.map(t => t.id));
+  db.courses = db.courses.filter(o => gid.has(o.classId));
+  const cid = new Set(db.courses.map(o => o.id));
+  db.points = db.points.filter(p => sid.has(p.studentId) && cid.has(p.classId));
   db.attendance = db.attendance.filter(a => cid.has(a.classId));
   db.exams = db.exams.filter(e => cid.has(e.classId));
+  Object.keys(db.schedule).forEach(k => { if (!cid.has(db.schedule[k])) delete db.schedule[k]; });
+}
+
+const DAYS = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+const NAV = [['plan','میز کار'],['schools','مدارس'],['report','گزارش'],['set','تنظیمات']];
+function drawNav(){
+  const cur = v.nav || 'schools';
+  $('nav').innerHTML = NAV.map(([k, n]) => `<button class="nv${cur === k ? ' on' : ''}" data-nav="${k}">${n}</button>`).join('');
+}
+$('nav').onclick = e => {
+  const b = e.target.closest('[data-nav]'); if (!b) return;
+  v = b.dataset.nav === 'schools' ? { page: 'schools' } : { nav: b.dataset.nav };
+  render(); window.scrollTo(0, 0);
+};
+function migrate(){
+  if (db.v2) return;
+  db.classes.forEach(c => {
+    const co = { id: uid(), classId: c.id, name: c.subject || c.name };
+    db.courses.push(co);
+    [db.attendance, db.exams, db.points].forEach(a => a.forEach(x => { if (x.classId === c.id) x.classId = co.id; }));
+  });
+  db.v2 = 1; save();
+}
+function openCourse(id, from){
+  const co = db.courses.find(x => x.id === id), g = db.classes.find(x => x.id === co.classId);
+  v = { page: 'students', schoolId: g.schoolId, classId: g.id, courseId: id, tab: 'att', from };
+  render(); window.scrollTo(0, 0);
+}
+function coursesTab(){
+  const g = db.classes.find(x => x.id === v.classId), l = db.courses.filter(o => o.classId === g.id);
+  $('title').innerHTML = esc(g.name) + '<small>درس‌ها</small>';
+  $('fab').textContent = '+ درس جدید';
+  $('app').innerHTML = tabsHtml() + (l.length ? '<div class="group">' + l.map((o, i) => row('o', o.id, color(i + 4), o.name[0], o.name, fa(db.exams.filter(e => e.classId === o.id).length) + ' آزمون')).join('') + '</div>' : emptyBox('درسی ثبت نشده', 'مثلاً «مدیریت تولید» را اضافه کن.'));
+}
+function addCourse(id){
+  const o = db.courses.find(x => x.id === id) || {};
+  sheet(id ? 'ویرایش درس' : 'درس جدید', [{ k:'name', label:'نام درس', ph:'مثلاً مدیریت تولید' }], o, d => {
+    if (needName(d) === false) return false;
+    if (id) o.name = d.name; else db.courses.push({ id: uid(), classId: v.classId, name: d.name });
+  });
+}
+function choose(title, opts){
+  $('modal').innerHTML = `<div class="sheet-bg"><div class="sheet" role="dialog"><h2>${title}</h2><div class="group">` +
+    opts.map((o, i) => `<div class="row" data-i="${i}"><div class="info"><b>${esc(o[0])}</b>${o[2] ? '<span>' + esc(o[2]) + '</span>' : ''}</div></div>`).join('') +
+    '</div><div class="actions"><button class="btn no" id="no">بستن</button></div></div></div>';
+  $('no').onclick = closeSheet;
+  $('modal').onclick = e => {
+    if (e.target.classList.contains('sheet-bg')) return closeSheet();
+    const r = e.target.closest('[data-i]'); if (r) { const f = opts[r.dataset.i][1]; closeSheet(); f(); }
+  };
+}
+function planView(){
+  $('title').innerHTML = 'برنامه هفتگی<small>' + fdate(today()) + '</small>'; $('fab').hidden = true;
+  const hid = db.settings.hidden, days = [0,1,2,3,4,5,6].filter(i => !hid.includes(i)), t = (new Date().getDay() + 1) % 7, P = [1,2,3,4];
+  const cell = (d, p) => {
+    const co = db.courses.find(x => x.id === db.schedule[d + '-' + p]);
+    if (!co) return `<button class="cell empty" data-act="cell" data-d="${d}" data-p="${p}" aria-label="افزودن درس">+</button>`;
+    const g = db.classes.find(x => x.id === co.classId);
+    return `<button class="cell" style="background:${color(db.courses.indexOf(co) + 4)}" data-act="cell" data-d="${d}" data-p="${p}"><b>${esc(co.name)}</b><span>${esc(g.name)}</span></button>`;
+  };
+  let h;
+  if (!db.settings.transpose) {
+    h = `<div class="grid" style="grid-template-columns:26px repeat(${days.length},1fr)"><div></div>` + days.map(i => `<div class="dh${i === t ? ' today' : ''}">${DAYS[i]}</div>`).join('') +
+      P.map(p => `<div class="ph">${fa(p)}</div>` + days.map(d => cell(d, p)).join('')).join('');
+  } else {
+    h = `<div class="grid" style="grid-template-columns:56px repeat(4,1fr)"><div></div>` + P.map(p => `<div class="dh">زنگ ${fa(p)}</div>`).join('') +
+      days.map(d => `<div class="dh${d === t ? ' today' : ''}">${DAYS[d]}</div>` + P.map(p => cell(d, p)).join('')).join('');
+  }
+  $('app').innerHTML = h + '</div>' + (Object.keys(db.schedule).length ? '' : '<p class="hint" style="margin-top:14px">با زدن + روی هر زنگ، درس آن زنگ را انتخاب کن. (اول از بخش «مدارس» پایه و رشته و درس بساز.)</p>');
+}
+function cellTap(d, p){
+  const key = d + '-' + p, id = db.schedule[key], ttl = DAYS[d] + ' • زنگ ' + fa(p);
+  const pick = () => {
+    if (!db.courses.length) return alert('اول از بخش «مدارس» یک پایه و رشته و درس بساز.');
+    choose(ttl, db.courses.map(o => {
+      const g = db.classes.find(x => x.id === o.classId), sc = db.schools.find(x => x.id === g.schoolId);
+      return [o.name, () => { db.schedule[key] = o.id; save(); render(); }, g.name + ' • ' + sc.name];
+    }));
+  };
+  if (!id) return pick();
+  choose(ttl, [['باز کردن درس', () => openCourse(id, 'plan')], ['تغییر درس', pick], ['خالی کردن این زنگ', () => { delete db.schedule[key]; save(); render(); }]]);
+}
+function settingsView(){
+  $('title').textContent = 'تنظیمات'; $('fab').hidden = true;
+  const st = db.settings;
+  $('app').innerHTML = `<p class="hint" style="margin:0 2px 8px">روزهایی که در برنامه هفتگی نمایش داده می‌شوند:</p><div class="tabs" style="flex-wrap:wrap">` +
+    DAYS.map((n, i) => `<button class="tab${st.hidden.includes(i) ? '' : ' on'}" data-act="day" data-i="${i}">${n}</button>`).join('') +
+    `</div><p class="hint" style="margin:0 2px 8px">جهت جدول برنامه در میز کار:</p><div class="tabs"><button class="tab${st.transpose ? '' : ' on'}" data-act="orient" data-o="0">روزها در ستون</button><button class="tab${st.transpose ? ' on' : ''}" data-act="orient" data-o="1">روزها در سطر</button></div><div class="group" style="margin:12px 0 18px"><div class="row" data-act="prof"><div class="info"><b>مشخصات سربرگ گزارش</b><span>${esc(st.teacher || 'نام معلم')} • ${esc(st.school || 'نام مدرسه')}</span></div></div></div>
+    <p class="hint" style="margin:0 2px 8px">پشتیبان‌گیری از اطلاعات:</p>` + backupBar();
+}
+function stat(co, t){
+  const att = db.attendance.filter(a => a.classId === co.id), m = { a: 0, l: 0, e: 0 };
+  att.forEach(a => { const x = a.marks[t.id]; if (x) m[x]++; });
+  return { m, sessions: att.length, pts: db.points.filter(p => p.studentId === t.id && p.classId === co.id),
+    ex: db.exams.filter(e => e.classId === co.id).map(e => ({ title: e.title, max: e.max, score: e.scores[t.id] })) };
+}
+const RT = [['parent','والدین','گزارش رسمی درباره یک دانش‌آموز، همراه با متن خطاب به ولی'],['admin','مدیر یا معاون','گزارش رسمی درباره یک مدرسه، همراه با توضیحات کامل'],['gen','کلی','برای خودت یا ارائه به هر شخص دیگر؛ گزارش یک درس']];
+const schoolOf = g => db.schools.find(x => x.id === g.schoolId);
+const avgOf = (e, n) => { const s = Object.values(e.scores); return s.length ? fa((s.reduce((a, b) => a + b, 0) / s.length).toFixed(1)) : '—'; };
+const lowCount = x => x.ex.filter(e => e.score != null && e.score < e.max / 2).length;
+function parentReport(g, t){
+  const sc = db.settings.school || schoolOf(g).name;
+  const L = ['با سلام و احترام', 'ولی محترم دانش‌آموز «' + t.name + '»', '',
+    'با آرزوی سلامتی و موفقیت برای شما و فرزند عزیزتان؛ این گزارش به منظور اطلاع‌رسانی از روند تحصیلی و انضباطی فرزندتان، دانش‌آموز پایه و رشته «' + g.name + '» در مدرسه «' + sc + '»، تهیه شده است. اطلاعات آن بر اساس سوابق ثبت‌شده توسط معلم تا تاریخ ' + fdate(today()) + ' تنظیم شده و همکاری و پیگیری شما در کنار مدرسه نقش مهمی در پیشرفت تحصیلی فرزندتان دارد.', ''];
+  const cs = db.courses.filter(o => o.classId === g.id);
+  if (!cs.length) L.push('هنوز درسی برای این پایه ثبت نشده است.', '');
+  cs.forEach(co => {
+    const x = stat(co, t), pos = x.pts.filter(p => p.val > 0).length;
+    L.push('■ درس ' + co.name, `حضور و غیاب: ${fa(x.m.a)} جلسه غیبت، ${fa(x.m.l)} تأخیر و ${fa(x.m.e)} غیبت موجه، از ${fa(x.sessions)} جلسه ثبت‌شده.`, 'نمرات آزمون‌ها:');
+    if (!x.ex.length) L.push('- هنوز آزمونی ثبت نشده است.');
+    x.ex.forEach(e => L.push('- ' + e.title + ': ' + (e.score == null ? 'ثبت نشده' : fa(e.score) + ' از ' + fa(e.max))));
+    L.push(`نمره مثبت (تشویق): ${fa(pos)} مورد • نمره منفی (تذکر): ${fa(x.pts.length - pos)} مورد`);
+    x.pts.forEach(p => { if (p.reason) L.push((p.val > 0 ? '+ ' : '− ') + p.reason); });
+    L.push('');
+  });
+  L.push('توضیح: «غیبت» به معنای غیبت غیرموجه است و «غیبت موجه» غیبتی است که با دلیل پذیرفته شده است. نمره مثبت و منفی بر اساس رفتار و مشارکت دانش‌آموز در کلاس ثبت می‌شود.', '',
+    'در صورت نیاز به توضیح بیشتر یا هماهنگی برای گفت‌وگو درباره وضعیت تحصیلی فرزندتان، خواهشمند است با مدرسه یا معلم تماس بگیرید.', '', 'با تشکر و احترام');
+  if (db.settings.teacher) L.push(db.settings.teacher);
+  return L;
+}
+function adminReport(sc){
+  const L = ['با سلام و احترام', 'مدیر / معاون محترم مدرسه «' + sc.name + '»', '',
+    'با آرزوی توفیق؛ این گزارش خلاصه‌ای از وضعیت حضور و غیاب، آزمون‌ها و موارد نیازمند توجه در کلاس‌هایی است که در آن مدرسه تدریس می‌شود و بر اساس سوابق ثبت‌شده تا تاریخ ' + fdate(today()) + ' تنظیم شده است. در پایان فهرست دانش‌آموزانی آمده که پیگیری آنها پیشنهاد می‌شود.', ''];
+  const need = [];
+  db.classes.filter(g => g.schoolId === sc.id).forEach(g => {
+    const list = studentsOf(g.id);
+    L.push('■ ' + g.name + ' (' + fa(list.length) + ' دانش‌آموز)');
+    db.courses.filter(o => o.classId === g.id).forEach(co => {
+      const xs = list.map(t => stat(co, t)), n = k => xs.reduce((a, x) => a + x.m[k], 0);
+      L.push('• درس ' + co.name + ': ' + fa(db.attendance.filter(a => a.classId === co.id).length) + ' جلسه ثبت‌شده؛ مجموع غیبت ' + fa(n('a')) + '، تأخیر ' + fa(n('l')) + '، غیبت موجه ' + fa(n('e')));
+      db.exams.filter(e => e.classId === co.id).forEach(e => L.push('   آزمون ' + e.title + ': میانگین ' + avgOf(e) + ' از ' + fa(e.max)));
+      list.forEach((t, i) => { const x = xs[i], low = lowCount(x); if (x.m.a >= 3 || low) need.push('- ' + t.name + ' (' + g.name + '، ' + co.name + '): غیبت ' + fa(x.m.a) + (low ? '، نمره پایین در ' + fa(low) + ' آزمون' : '')); });
+    });
+    L.push('');
+  });
+  L.push('موارد نیازمند توجه (۳ غیبت یا بیشتر، یا نمره کمتر از نصف نمره کل):', ...(need.length ? need : ['- موردی ثبت نشده است.']), '',
+    'خواهشمند است در صورت صلاح‌دید، هماهنگی لازم برای پیگیری موارد فوق با مشاور و اولیا انجام شود.', '', 'با تشکر و احترام');
+  if (db.settings.teacher) L.push(db.settings.teacher);
+  return L;
+}
+function genReport(co){
+  const g = db.classes.find(x => x.id === co.classId), list = studentsOf(g.id), ex = db.exams.filter(e => e.classId === co.id);
+  const L = [db.settings.school || schoolOf(g).name, g.name + ' • درس ' + co.name, 'تاریخ: ' + fdate(today()), '', 'آزمون‌ها:'];
+  if (!ex.length) L.push('- ثبت نشده');
+  ex.forEach(e => L.push('- ' + e.title + ': میانگین ' + avgOf(e) + ' از ' + fa(e.max)));
+  L.push('', 'دانش‌آموزان (' + fa(list.length) + ' نفر):');
+  list.forEach(t => {
+    const x = stat(co, t), pos = x.pts.filter(p => p.val > 0).length, sc = x.ex.filter(e => e.score != null);
+    L.push('- ' + t.name + ': غیبت ' + fa(x.m.a) + ' • تأخیر ' + fa(x.m.l) + ' • مثبت ' + fa(pos) + ' • منفی ' + fa(x.pts.length - pos) + (sc.length ? ' • میانگین آزمون‌ها ' + fa(Math.round(sc.reduce((a, e) => a + e.score / e.max, 0) / sc.length * 100)) + '٪' : ''));
+  });
+  return L;
+}
+function reportView(){
+  $('title').textContent = 'گزارش‌ها'; $('fab').hidden = true;
+  const r = v.rep, app = $('app'), back = '<div class="tabs noprint"><button class="tab" data-act="repback">← بازگشت</button></div>';
+  const rows = items => '<div class="group">' + items.map(([id, a, b]) => `<div class="row" data-act="${r.id ? 'rstu' : 'rpick'}" data-id="${id}"><div class="info"><b>${esc(a)}</b><span>${esc(b)}</span></div></div>`).join('') + '</div>';
+  if (!r) { app.innerHTML = '<p class="hint" style="margin:0 2px 8px">نوع گزارش را انتخاب کن:</p><div class="group">' + RT.map(([k, n, d]) => `<div class="row" data-act="rtype" data-t="${k}"><div class="info"><b>${n}</b><span>${d}</span></div></div>`).join('') + '</div>'; return; }
+  if (!r.id) {
+    const it = r.type === 'parent' ? db.classes.map(g => [g.id, g.name, schoolOf(g).name]) : r.type === 'admin' ? db.schools.map(s => [s.id, s.name, fa(db.classes.filter(g => g.schoolId === s.id).length) + ' پایه و رشته']) :
+      db.courses.map(o => { const g = db.classes.find(x => x.id === o.classId); return [o.id, o.name, g.name + ' • ' + schoolOf(g).name]; });
+    app.innerHTML = back + '<p class="hint" style="margin:0 2px 8px">' + (r.type === 'parent' ? 'پایه و رشته دانش‌آموز را انتخاب کن:' : r.type === 'admin' ? 'مدرسه را انتخاب کن:' : 'درس را انتخاب کن:') + '</p>' + (it.length ? rows(it) : emptyBox('موردی ثبت نشده', 'اول از بخش «مدارس» اطلاعات را وارد کن.'));
+    return;
+  }
+  if (r.type === 'parent' && !r.sid) {
+    const l = studentsOf(r.id);
+    app.innerHTML = back + '<p class="hint" style="margin:0 2px 8px">دانش‌آموز را انتخاب کن:</p>' + (l.length ? rows(l.map(t => [t.id, t.name, t.number ? 'شماره: ' + t.number : ''])) : emptyBox('دانش‌آموزی ثبت نشده', 'اول دانش‌آموزان این پایه را اضافه کن.'));
+    return;
+  }
+  const L = r.type === 'parent' ? parentReport(db.classes.find(x => x.id === r.id), db.students.find(x => x.id === r.sid))
+    : r.type === 'admin' ? adminReport(db.schools.find(x => x.id === r.id)) : genReport(db.courses.find(x => x.id === r.id));
+  v.text = L.join('\n');
+  app.innerHTML = back + `<div class="paper">${esc(v.text)}</div><div class="bar noprint"><button class="chip" data-act="print">چاپ / ذخیره PDF</button><button class="chip" data-act="share">اشتراک‌گذاری</button></div>`;
+}
+function share(){
+  const t = v.text;
+  if (navigator.share) navigator.share({ title: 'گزارش', text: t }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => alert('متن گزارش کپی شد.'));
+  else alert('اشتراک‌گذاری در این مرورگر ممکن نیست.');
 }
 
 $('app').addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const { act, k, id } = el.dataset;
   if (act === 'bulk') return bulk();
+  if (act === 'cell') return cellTap(+el.dataset.d, +el.dataset.p);
+  if (act === 'orient') { db.settings.transpose = el.dataset.o === '1'; save(); return render(); }
+  if (act === 'rtype') { v = { nav: 'report', rep: { type: el.dataset.t } }; return render(); }
+  if (act === 'rpick') { v.rep.id = id; return render(); }
+  if (act === 'rstu') { v.rep.sid = id; return render(); }
+  if (act === 'repback') { if (v.rep.sid) v.rep.sid = null; else if (v.rep.id) v.rep.id = null; else v = { nav: 'report' }; return render(); }
+  if (act === 'print') return window.print();
+  if (act === 'share') return share();
+  if (act === 'day') { const i = +el.dataset.i, h = db.settings.hidden; if (h.includes(i)) db.settings.hidden = h.filter(x => x !== i); else if (h.length < 6) h.push(i); save(); return render(); }
+  if (act === 'prof') { const st = db.settings; return sheet('مشخصات سربرگ گزارش', [{ k:'teacher', label:'نام معلم' }, { k:'school', label:'نام مدرسه (اختیاری)' }], st, d => { st.teacher = d.teacher; st.school = d.school; }); }
   if (act === 'tab') { v.tab = el.dataset.t; v.examId = null; return render(); }
   if (act === 'mark') return mark(id, el.dataset.s);
   if (act === 'pm') return givePoint(id, +el.dataset.v);
@@ -325,12 +530,14 @@ $('app').addEventListener('click', e => {
     if (k === 'c') v = { page: 'students', schoolId: v.schoolId, classId: id };
     if (k === 't') return addOrEdit('t', id);
     if (k === 'x') { v.examId = id; render(); window.scrollTo(0, 0); return; }
+    if (k === 'o') return openCourse(id);
     render(); window.scrollTo(0, 0);
   }
 });
-$('fab').onclick = () => addOrEdit(v.page === 'students' && v.tab === 'exam' ? 'x' : { schools: 's', classes: 'c', students: 't' }[v.page]);
+$('fab').onclick = () => addOrEdit(v.page === 'students' ? (v.courseId ? 'x' : v.tab === 'courses' ? 'o' : 't') : { schools: 's', classes: 'c' }[v.page]);
 $('back').onclick = () => {
   if (v.examId) { v.examId = null; render(); return; }
+  if (v.courseId) { v = v.from === 'plan' ? { nav: 'plan' } : { page: 'students', schoolId: v.schoolId, classId: v.classId, tab: 'courses' }; render(); return; }
   v = v.page === 'students' ? { page: 'classes', schoolId: v.schoolId } : { page: 'schools' };
   render();
 };
@@ -351,6 +558,7 @@ $('app').addEventListener('change', e => {
   }
 });
 
+migrate();
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
